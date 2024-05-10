@@ -45,9 +45,9 @@ class MsSqlDriver(DbDriver):
         # Need to run this with autocommit=True to avoid a transaction error
         # See: https://stackoverflow.com/a/42008664
         async with engine.connect() as conn:
-            await conn.execute(
-                text(f"CREATE DATABASE {database}").execution_options(autocommit=True)
-            )
+            rc = await conn.get_raw_connection()
+            rc.driver_connection.autocommit = True
+            await conn.execute(text(f"CREATE DATABASE {database}"))
 
     @property
     def async_uri(self) -> str:
