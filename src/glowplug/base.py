@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from functools import cached_property
+from typing import Any
 
+import alembic
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -11,9 +13,25 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 
+class AlembicCommandProxy:
+    """Proxy for running alembic commands with a given config."""
+
+    def __init__(self, config: alembic.config.Config) -> None:
+        self.config = config
+
+    def __getattribute__(self, name: str) -> Any:
+        cmd = getattr(alembic.command, name)
+        if callable(cmd):
+            return lambda *args, **kwargs: cmd(self.config, *args, **kwargs)
+        return super().__getattribute__(name)
+
+
 class DbDriver(ABC):
-    def __init__(self, debug: bool = False) -> None:
+    def __init__(
+        self, debug: bool = False, alembic_config: str = "alembic.ini"
+    ) -> None:
         self.debug = debug
+        self.alembic_config = alembic_config
 
     @abstractmethod
     async def exists(self) -> bool:
@@ -63,3 +81,11 @@ class DbDriver(ABC):
     def sync_session(self) -> Session:
         """Get a sync session."""
         return sessionmaker(self.get_sync_engine(), expire_on_commit=False)
+
+    @cached_property
+    def alembic(self) -> AlembicCommandProxy:
+        """Get an alembic command proxy."""
+        # Use the Alembic config from `alembic.ini` but override the URL for the db
+        al_cfg = alembic.config.Config(self.alembic_config)
+        al_cfg.set_main_option("sqlalchemy.url", self.sync_uri)
+        return AlembicCommandProxy(al_cfg)
