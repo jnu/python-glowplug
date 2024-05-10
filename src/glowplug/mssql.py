@@ -33,7 +33,7 @@ class MsSqlDriver(DbDriver):
                 text("SELECT name FROM sys.databases WHERE name = :db"),
                 {"db": database},
             )
-            row = await result.fetchone()
+            row = result.fetchone()
             return row is not None
 
     async def create(self) -> None:
@@ -42,12 +42,12 @@ class MsSqlDriver(DbDriver):
         path, database = self._split_path()
         # Connect to the database-less path
         engine = create_async_engine(f"mssql+aioodbc://{path}")
-        # Create a raw connection with autocommit on.
+        # Need to run this with autocommit=True to avoid a transaction error
         # See: https://stackoverflow.com/a/42008664
-        conn = await engine.raw_connection()
-        conn.driver_connection.autocommit = True
-        await conn.driver_connection.execute(f"CREATE DATABASE {database}")
-        conn.close()
+        async with engine.connect() as conn:
+            await conn.execute(
+                text(f"CREATE DATABASE {database}").execution_options(autocommit=True)
+            )
 
     @property
     def async_uri(self) -> str:
