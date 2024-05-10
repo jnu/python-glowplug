@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 from .base import DbDriver
 
@@ -29,7 +30,8 @@ class MsSqlDriver(DbDriver):
         async with engine.connect() as conn:
             # Check if the database exists
             result = await conn.execute(
-                f"SELECT name FROM sys.databases WHERE name = '{database}'"
+                text("SELECT name FROM sys.databases WHERE name = :db"),
+                {"db": database},
             )
             row = await result.fetchone()
             return row is not None
@@ -40,9 +42,12 @@ class MsSqlDriver(DbDriver):
         path, database = self._split_path()
         # Connect to the database-less path
         engine = create_async_engine(f"mssql+aioodbc://{path}")
-        async with engine.connect() as conn:
-            # Create the database
-            await conn.execute(f"CREATE DATABASE {database}")
+        # Create a raw connection with autocommit on.
+        # See: https://stackoverflow.com/a/42008664
+        conn = await engine.raw_connection()
+        conn.driver_connection.autocommit = True
+        await conn.driver_connection.execute(f"CREATE DATABASE {database}")
+        conn.close()
 
     @property
     def async_uri(self) -> str:
