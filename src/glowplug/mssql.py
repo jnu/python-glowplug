@@ -7,14 +7,18 @@ class MsSqlDriver(DbDriver):
 
     path: str
 
-    def __init__(self, path: str, **kwargs):
+    maintenance_db: str
+
+    def __init__(self, path: str, maintenance_db: str = "master", **kwargs):
         """Initialize the driver.
 
         Args:
             path (str): The path to connect to the database.
+            maintenance_db (str, optional): The database to connect to for maintenance. Defaults to "master".
         """
         super().__init__(**kwargs)
         self.path = path
+        self.maintenance_db = maintenance_db
 
     async def exists(self) -> bool:
         """Check if the database exists."""
@@ -56,6 +60,7 @@ class MsSqlDriver(DbDriver):
         head, tail = self.path.split("/", 1)
         # Extract the database name from the tail
         database, query = tail.split("?", 1)
-        # Re-join the query to the beginning of the path
-        path = f"{head}/?{query}"
+        # Re-join the query to the beginning of the path, with the
+        # name of the maintenance database.
+        path = f"{head}/{self.maintenance_db}?{query}"
         return path, database
