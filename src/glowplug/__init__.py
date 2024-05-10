@@ -1,6 +1,16 @@
-from .base import DbDriver
-from .pg import PostgresDriver
-from .sqlite import SqliteDriver
-from .mssql import MsSqlDriver
+from .driver.base import DbDriver
+from .driver.pg import PostgresDriver
+from .driver.sqlite import SqliteDriver
+from .driver.mssql import MsSqlDriver
 
-__all__ = ["DbDriver", "PostgresDriver", "SqliteDriver", "MsSqlDriver"]
+from .config import PostgresSettings, MsSqlSettings, SqliteSettings
+
+__all__ = [
+    "DbDriver",
+    "PostgresDriver",
+    "SqliteDriver",
+    "MsSqlDriver",
+    "PostgresSettings",
+    "MsSqlSettings",
+    "SqliteSettings",
+]
