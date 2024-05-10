@@ -3,6 +3,8 @@ from functools import cached_property
 from typing import Any
 
 import alembic
+import alembic.command
+import alembic.config
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
