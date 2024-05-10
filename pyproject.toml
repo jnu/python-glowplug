@@ -5,6 +5,10 @@ description = ""
 authors = ["Joe Nudell <jnudell@hks.harvard.edu>"]
 readme = "README.md"
 license = "MIT"
+repository = "https://github.com/jnu/python-glowplug"
+packages = [
+    { include = "glowplug", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
