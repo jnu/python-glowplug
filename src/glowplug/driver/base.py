@@ -22,9 +22,10 @@ class AlembicCommandProxy:
         self.config = config
 
     def __getattribute__(self, name: str) -> Any:
-        cmd = getattr(alembic.command, name)
+        cmd = getattr(alembic.command, name, None)
         if callable(cmd):
-            return lambda *args, **kwargs: cmd(self.config, *args, **kwargs)
+            cfg = super().__getattribute__("config")
+            return lambda *args, **kwargs: cmd(cfg, *args, **kwargs)
         return super().__getattribute__(name)
 
 
