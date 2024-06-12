@@ -26,7 +26,9 @@ class SqliteDriver(DbDriver):
             return
         # Make sure directories exist. The file itself will be created
         # when the first connection is made.
-        os.makedirs(os.path.dirname(self.path), exist_ok=True)
+        dirname = os.path.dirname(self.path)
+        if dirname:
+            os.makedirs(dirname, exist_ok=True)
 
     @property
     def async_uri(self) -> str:
