@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any
+from typing import Any, List
 
 import alembic
 import alembic.command
 import alembic.config
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, inspect
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -57,6 +57,29 @@ class DbDriver(ABC):
     def sync_uri(self) -> str:
         """The sync uri."""
         ...
+
+    def list_tables(self) -> List[str]:
+        """List tables in the database."""
+        # TODO: sqlalchemy doesn't have an async `inspect` API.
+        # Presumably this won't be run any context where that matters much,
+        # but ideally we'd have a way to do this async.
+        engine = self.get_sync_engine()
+        inspector = inspect(engine)
+        return inspector.get_table_names()
+
+    async def is_blank_slate(self) -> bool:
+        """Helper to check if the database is missing or has no tables.
+
+        Returns:
+            bool: True if the database is a blank slate, False otherwise.
+        """
+        if not await self.exists():
+            return True
+
+        if not self.list_tables():
+            return True
+
+        return False
 
     async def init(self, base: DeclarativeBase, drop_first: bool = False) -> None:
         """Initialize the database."""
