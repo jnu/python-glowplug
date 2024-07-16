@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from functools import cached_property
+from functools import cached_property, cache
 from typing import Any, List
 
 import alembic
@@ -98,17 +98,27 @@ class DbDriver(ABC):
         """Get a sync engine."""
         return create_engine(self.sync_uri, echo=self.debug, **kwargs)
 
-    @cached_property
-    def async_session(self, **kwargs) -> AsyncSession:
-        """Get an async session."""
+    @cache
+    def async_session_with_args(self, **kwargs) -> AsyncSession:
+        """Get an async session with arguments."""
         return async_sessionmaker(
             self.get_async_engine(**kwargs), expire_on_commit=False
         )
 
     @cached_property
+    def async_session(self) -> AsyncSession:
+        """Get an async session."""
+        return self.async_session_with_args()
+
+    @cache
+    def sync_session_with_args(self, **kwargs) -> Session:
+        """Get a sync session with arguments."""
+        return sessionmaker(self.get_sync_engine(**kwargs), expire_on_commit=False)
+
+    @cached_property
     def sync_session(self, **kwargs) -> Session:
         """Get a sync session."""
-        return sessionmaker(self.get_sync_engine(**kwargs), expire_on_commit=False)
+        return self.sync_session_with_args()
 
     @cached_property
     def alembic(self) -> AlembicCommandProxy:
