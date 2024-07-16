@@ -90,13 +90,13 @@ class DbDriver(ABC):
             await conn.run_sync(base.metadata.create_all)
         await engine.dispose()
 
-    def get_async_engine(self) -> AsyncEngine:
+    def get_async_engine(self, **kwargs) -> AsyncEngine:
         """Get an async engine."""
-        return create_async_engine(self.async_uri, echo=self.debug)
+        return create_async_engine(self.async_uri, echo=self.debug, **kwargs)
 
-    def get_sync_engine(self) -> Engine:
+    def get_sync_engine(self, **kwargs) -> Engine:
         """Get a sync engine."""
-        return create_engine(self.sync_uri, echo=self.debug)
+        return create_engine(self.sync_uri, echo=self.debug, **kwargs)
 
     @cached_property
     def async_session(self, **kwargs) -> AsyncSession:
