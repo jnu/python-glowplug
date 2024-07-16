@@ -99,14 +99,16 @@ class DbDriver(ABC):
         return create_engine(self.sync_uri, echo=self.debug)
 
     @cached_property
-    def async_session(self) -> AsyncSession:
+    def async_session(self, **kwargs) -> AsyncSession:
         """Get an async session."""
-        return async_sessionmaker(self.get_async_engine(), expire_on_commit=False)
+        return async_sessionmaker(
+            self.get_async_engine(**kwargs), expire_on_commit=False
+        )
 
     @cached_property
-    def sync_session(self) -> Session:
+    def sync_session(self, **kwargs) -> Session:
         """Get a sync session."""
-        return sessionmaker(self.get_sync_engine(), expire_on_commit=False)
+        return sessionmaker(self.get_sync_engine(**kwargs), expire_on_commit=False)
 
     @cached_property
     def alembic(self) -> AlembicCommandProxy:
