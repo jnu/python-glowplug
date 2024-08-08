@@ -53,7 +53,7 @@ class PostgresDriver(DbDriver):
             f"postgresql+asyncpg://{base_url}", echo=self.debug
         )
         async with engine.connect() as conn:
-            await conn.execute(f"CREATE DATABASE {db_name}")
+            await conn.execute(text(f"CREATE DATABASE {db_name}"))
         await engine.dispose()
 
     @property
