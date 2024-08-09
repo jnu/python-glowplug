@@ -50,7 +50,9 @@ class PostgresDriver(DbDriver):
         if self.maintenance_db:
             base_url = f"{base_url}/{self.maintenance_db}"
         engine = create_async_engine(
-            f"postgresql+asyncpg://{base_url}", echo=self.debug
+            f"postgresql+asyncpg://{base_url}",
+            echo=self.debug,
+            isolation_level="AUTOCOMMIT",
         )
         async with engine.connect() as conn:
             await conn.execute(text(f"CREATE DATABASE {db_name}"))
