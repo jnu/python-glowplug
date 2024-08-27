@@ -64,8 +64,11 @@ class DbDriver(ABC):
         # Presumably this won't be run any context where that matters much,
         # but ideally we'd have a way to do this async.
         engine = self.get_sync_engine()
-        inspector = inspect(engine)
-        return inspector.get_table_names()
+        try:
+            inspector = inspect(engine)
+            return inspector.get_table_names()
+        finally:
+            engine.dispose()
 
     async def is_blank_slate(self) -> bool:
         """Helper to check if the database is missing or has no tables.

@@ -27,14 +27,17 @@ class MsSqlDriver(DbDriver):
         path, database = self._split_path()
         # Connect to the database-less path
         engine = create_async_engine(f"mssql+aioodbc://{path}")
-        async with engine.connect() as conn:
-            # Check if the database exists
-            result = await conn.execute(
-                text("SELECT name FROM sys.databases WHERE name = :db"),
-                {"db": database},
-            )
-            row = result.fetchone()
-            return row is not None
+        try:
+            async with engine.connect() as conn:
+                # Check if the database exists
+                result = await conn.execute(
+                    text("SELECT name FROM sys.databases WHERE name = :db"),
+                    {"db": database},
+                )
+                row = result.fetchone()
+                return row is not None
+        finally:
+            await engine.dispose()
 
     async def create(self) -> None:
         """Create the database."""
@@ -44,10 +47,13 @@ class MsSqlDriver(DbDriver):
         engine = create_async_engine(f"mssql+aioodbc://{path}")
         # Need to run this with autocommit=True to avoid a transaction error
         # See: https://stackoverflow.com/a/42008664
-        async with engine.connect() as conn:
-            rc = await conn.get_raw_connection()
-            rc.driver_connection.autocommit = True
-            await conn.execute(text(f"CREATE DATABASE {database}"))
+        try:
+            async with engine.connect() as conn:
+                rc = await conn.get_raw_connection()
+                rc.driver_connection.autocommit = True
+                await conn.execute(text(f"CREATE DATABASE {database}"))
+        finally:
+            await engine.dispose()
 
     @property
     def async_uri(self) -> str:
