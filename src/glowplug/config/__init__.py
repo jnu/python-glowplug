@@ -11,7 +11,7 @@ from ..driver.sqlite import SqliteDriver
 class SqliteSettings(BaseModel):
     """Settings for connecting to SQLite."""
 
-    engine: Literal["sqlite"]
+    engine: Literal["sqlite"] = "sqlite"
     path: str = ":memory:"
 
     @cached_property
@@ -25,7 +25,7 @@ PgSslMode = Literal["disable", "allow", "prefer", "require", "verify-ca", "verif
 class PostgresSettings(BaseModel):
     """Settings for connecting to Postgres."""
 
-    engine: Literal["postgres"]
+    engine: Literal["postgres"] = "postgres"
     host: str = "localhost"
     port: int = 5432
     user: str = "postgres"
@@ -47,7 +47,7 @@ class PostgresSettings(BaseModel):
 class MsSqlSettings(BaseModel):
     """Settings for connecting to Microsoft SQL Server."""
 
-    engine: Literal["mssql"]
+    engine: Literal["mssql"] = "mssql"
     odbc_driver: Literal["ODBC Driver 17 for SQL Server"] = (
         "ODBC Driver 17 for SQL Server"
     )

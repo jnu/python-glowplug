@@ -23,11 +23,24 @@ class PostgresDriver(DbDriver):
         self.url = url
         self.maintenance_db = maintenance_db
 
+    @classmethod
+    def _fix_query_for_asyncpg(cls, query: str) -> str:
+        """Fix the query string for asyncpg.
+
+        asyncpg uses "ssl" instead of "sslmode" for the query param.
+
+        See: https://github.com/MagicStack/asyncpg/issues/737
+
+        Need to call this method in any async context, sadly.
+        """
+        return query.replace("sslmode", "ssl")
+
     async def exists(self) -> bool:
         """Check if the database exists."""
         # Split the url on the last / to get base url & db name
         base_url, db_name, query = self._split_url()
         # If a maintenance db is provided, use that to check if the db exists
+        query = self._fix_query_for_asyncpg(query)
         if self.maintenance_db:
             base_url = f"{base_url}/{self.maintenance_db}?{query}"
         engine = create_async_engine(
@@ -47,6 +60,7 @@ class PostgresDriver(DbDriver):
         """Create the database."""
         base_url, db_name, query = self._split_url()
         # If a maintenance db is provided, use that to create the db
+        query = self._fix_query_for_asyncpg(query)
         if self.maintenance_db:
             base_url = f"{base_url}/{self.maintenance_db}?{query}"
         engine = create_async_engine(
@@ -61,7 +75,9 @@ class PostgresDriver(DbDriver):
     @property
     def async_uri(self) -> str:
         """Async connection string."""
-        return f"postgresql+asyncpg://{self.url}"
+        url, db, query = self._split_url()
+        query = self._fix_query_for_asyncpg(query)
+        return f"postgresql+asyncpg://{url}/{db}?{query}"
 
     @property
     def sync_uri(self) -> str:
