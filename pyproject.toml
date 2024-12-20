@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-glowplug"
-version = "0.3.10"
+version = "0.3.11"
 description = "A collection of utilities for common DB maintenance operations in SQLAlchemy"
 authors = ["Joe Nudell <jnudell@hks.harvard.edu>"]
 readme = "README.md"
