@@ -26,10 +26,10 @@ class PostgresDriver(DbDriver):
     async def exists(self) -> bool:
         """Check if the database exists."""
         # Split the url on the last / to get base url & db name
-        base_url, db_name = self._split_url()
+        base_url, db_name, query = self._split_url()
         # If a maintenance db is provided, use that to check if the db exists
         if self.maintenance_db:
-            base_url = f"{base_url}/{self.maintenance_db}"
+            base_url = f"{base_url}/{self.maintenance_db}?{query}"
         engine = create_async_engine(
             f"postgresql+asyncpg://{base_url}", echo=self.debug
         )
@@ -45,10 +45,10 @@ class PostgresDriver(DbDriver):
 
     async def create(self) -> None:
         """Create the database."""
-        base_url, db_name = self._split_url()
+        base_url, db_name, query = self._split_url()
         # If a maintenance db is provided, use that to create the db
         if self.maintenance_db:
-            base_url = f"{base_url}/{self.maintenance_db}"
+            base_url = f"{base_url}/{self.maintenance_db}?{query}"
         engine = create_async_engine(
             f"postgresql+asyncpg://{base_url}",
             echo=self.debug,
@@ -65,10 +65,11 @@ class PostgresDriver(DbDriver):
 
     @property
     def sync_uri(self) -> str:
-        """Sync connection stringe."""
+        """Sync connection string."""
         return f"postgresql://{self.url}"
 
-    def _split_url(self) -> tuple[str, str]:
+    def _split_url(self) -> tuple[str, str, str]:
         """Split the url on the last / to get base url & db name."""
-        url, db = self.url.rsplit("/", 1)
-        return url, db
+        url, db_and_query = self.url.rsplit("/", 1)
+        db, _, query = db_and_query.partition("?")
+        return url, db, query

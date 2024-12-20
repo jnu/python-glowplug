@@ -19,6 +19,9 @@ class SqliteSettings(BaseModel):
         return SqliteDriver(self.path)
 
 
+PgSslMode = Literal["disable", "allow", "prefer", "require", "verify-ca", "verify-full"]
+
+
 class PostgresSettings(BaseModel):
     """Settings for connecting to Postgres."""
 
@@ -29,10 +32,15 @@ class PostgresSettings(BaseModel):
     password: str
     database: str
     maintenance_db: str | None = None
+    sslmode: PgSslMode | None = None
 
     @cached_property
     def driver(self) -> PostgresDriver:
         url = f"{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
+
+        if self.sslmode:
+            url += f"?sslmode={self.sslmode}"
+
         return PostgresDriver(url, maintenance_db=self.maintenance_db)
 
 
