@@ -1,25 +1,44 @@
-[tool.poetry]
+[project]
 name = "python-glowplug"
 version = "0.3.12"
 description = "A collection of utilities for common DB maintenance operations in SQLAlchemy"
-authors = ["Joe Nudell <jnudell@hks.harvard.edu>"]
+authors = [{ name = "Joe Nudell", email = "jnudell@hks.harvard.edu" }]
+requires-python = ">=3.9,<4"
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/jnu/python-glowplug"
-packages = [
-    { include = "glowplug", from = "src" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "sqlalchemy>=2,<3",
+    "alembic>=1.5,<2",
+    "pydantic>=2,<3",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-sqlalchemy = "^2"
-alembic = "^1.5"
-pydantic = "^2"
+[project.urls]
+Repository = "https://github.com/jnu/python-glowplug"
 
+[dependency-groups]
+dev = ["pre-commit>=3.7.0,<4"]
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.7.0"
+[tool.uv]
+default-groups = "all"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/glowplug"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/glowplug"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/glowplug" = "glowplug"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
