@@ -1,6 +1,6 @@
 [project]
 name = "python-glowplug"
-version = "0.3.12"
+version = "0.3.13"
 description = "A collection of utilities for common DB maintenance operations in SQLAlchemy"
 authors = [{ name = "Joe Nudell", email = "jnudell@hks.harvard.edu" }]
 requires-python = ">=3.9,<4"
